@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}行情首页 - 多巴胺行情终端{% endblock %}
+
+{% block content %}
+<!-- 大盘指数 -->
+<div class="index-grid" id="indexGrid">
+    <div class="loading"><div class="spinner"></div></div>
+</div>
+
+<!-- 股票排行 -->
+<div class="card">
+    <div class="card-header">
+        <div class="card-title">
+            <span>📈</span> A股行情排行
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;">
+            <span class="refresh-badge" id="refreshBadge">加载中...</span>
+            <button class="btn btn-sm btn-outline" onclick="loadStocks('f3','desc')">按涨跌幅</button>
+            <button class="btn btn-sm btn-outline" onclick="loadStocks('f6','desc')">按成交额</button>
+            <button class="btn btn-sm btn-outline" onclick="loadStocks('f20','desc')">按市值</button>
+            <button class="btn btn-sm btn-outline" onclick="loadStocks('f8','desc')">按换手率</button>
+        </div>
+    </div>
+    <div class="stock-table-wrapper">
+        <table class="stock-table" id="stockTable">
+            <thead>
+                <tr>
+                    <th>代码/名称</th>
+                    <th>最新价</th>
+                    <th>涨跌幅</th>
+                    <th>涨跌额</th>
+                    <th>成交量(手)</th>
+                    <th>成交额</th>
+                    <th>振幅</th>
+                    <th>换手率</th>
+                    <th>市盈率</th>
+                    <th>最高</th>
+                    <th>最低</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody id="stockTableBody">
+                <tr><td colspan="12"><div class="loading"><div class="spinner"></div></div></td></tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="pagination" id="pagination"></div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+<script src="{{ url_for('static', filename='js/market.js') }}"></script>
+{% endblock %}

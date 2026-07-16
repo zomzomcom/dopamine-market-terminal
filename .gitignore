@@ -1,0 +1,39 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+*.spec
+
+# 虚拟环境
+venv/
+.env/
+
+# 数据库（云端每次部署会重建）
+*.db
+database/*.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# 系统文件
+.DS_Store
+Thumbs.db
+
+# 临时脚本
+*.vbs
+start.bat
+create_shortcut.py
+test_e2e.py
+test_final.py
+migrate_project.py
+cleanup_cdrive.py
+rewrite_vbs.py
+finish_cleanup.py
+
+# 图标文件
+app_icon.ico

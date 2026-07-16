@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}投资分析 - 多巴胺行情终端{% endblock %}</title>
+    <!-- ECharts CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Noto+Sans+SC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <!-- App CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+    <!-- 顶部导航栏 -->
+    <nav class="top-nav">
+        <div class="nav-container">
+            <!-- Logo -->
+            <div class="nav-logo">
+                <div class="logo-icon">
+                    <svg viewBox="0 0 40 40" fill="none">
+                        <rect x="2" y="2" width="36" height="36" rx="10" fill="url(#logoGrad)"/>
+                        <path d="M10 28L16 18L22 24L30 12" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                        <circle cx="30" cy="12" r="3" fill="white"/>
+                        <defs>
+                            <linearGradient id="logoGrad" x1="0" y1="0" x2="40" y2="40">
+                                <stop offset="0%" stop-color="#FF6B6B"/>
+                                <stop offset="50%" stop-color="#A855F7"/>
+                                <stop offset="100%" stop-color="#3B82F6"/>
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                </div>
+                <span class="logo-text">多巴胺行情终端</span>
+            </div>
+
+            <!-- 导航菜单 -->
+            <div class="nav-menu">
+                <a href="/" class="nav-item {% if active_page == 'index' %}active{% endif %}">
+                    <span class="nav-icon">📊</span>行情首页
+                </a>
+                <a href="/watchlist" class="nav-item {% if active_page == 'watchlist' %}active{% endif %}">
+                    <span class="nav-icon">⭐</span>自选股
+                </a>
+                <a href="/portfolio" class="nav-item {% if active_page == 'portfolio' %}active{% endif %}">
+                    <span class="nav-icon">💼</span>持仓交易
+                </a>
+                <a href="/dragon-tiger" class="nav-item {% if active_page == 'dragon-tiger' %}active{% endif %}">
+                    <span class="nav-icon">🐉</span>龙虎榜
+                </a>
+                <a href="/settings" class="nav-item {% if active_page == 'settings' %}active{% endif %}">
+                    <span class="nav-icon">⚙️</span>设置
+                </a>
+            </div>
+
+            <!-- 搜索框 -->
+            <div class="nav-search">
+                <input type="text" id="globalSearch" placeholder="搜索股票代码/名称..." autocomplete="off">
+                <div id="searchResults" class="search-results-dropdown"></div>
+            </div>
+
+            <!-- 数据源状态 -->
+            <div class="nav-status" id="navStatus" title="数据源状态">
+                <span class="status-dot"></span>
+                <span class="status-text">检测中...</span>
+            </div>
+            <!-- 时间显示 -->
+            <div class="nav-time" id="navTime"></div>
+        </div>
+    </nav>
+
+    <!-- 主内容区 -->
+    <main class="main-content">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- 全局通知 -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <!-- App JS (页面级脚本在 extra_js 中加载) -->
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

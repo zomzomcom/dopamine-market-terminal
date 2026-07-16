@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+{% block title %}设置 - 多巴胺行情终端{% endblock %}
+
+{% block content %}
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;" id="settingsGrid">
+    <!-- 主题设置 -->
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title"><span>🎨</span> 主题外观</div>
+        </div>
+        <div class="card-body">
+            <div class="settings-section">
+                <div class="settings-row">
+                    <div>
+                        <div class="sr-label">界面主题</div>
+                        <div class="sr-desc">选择喜欢的配色风格</div>
+                    </div>
+                    <div class="theme-options">
+                        <div class="theme-option active" style="background:linear-gradient(135deg,#667eea,#764ba2);" onclick="setTheme('dopamine', this)"></div>
+                        <div class="theme-option" style="background:linear-gradient(135deg,#ff6b6b,#ee5a6f);" onclick="setTheme('warm', this)"></div>
+                        <div class="theme-option" style="background:linear-gradient(135deg,#00d2d3,#3bb4a0);" onclick="setTheme('cool', this)"></div>
+                        <div class="theme-option" style="background:linear-gradient(135deg,#2d2d2d,#1a1a2e);" onclick="setTheme('dark', this)"></div>
+                    </div>
+                </div>
+                <div class="settings-row">
+                    <div>
+                        <div class="sr-label">暗色模式</div>
+                        <div class="sr-desc">夜间使用更护眼</div>
+                    </div>
+                    <div class="switch" id="darkModeSwitch" onclick="toggleDarkMode()"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 行情设置 -->
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title"><span>📊</span> 行情设置</div>
+        </div>
+        <div class="card-body">
+            <div class="settings-section">
+                <div class="settings-row">
+                    <div>
+                        <div class="sr-label">自动刷新</div>
+                        <div class="sr-desc">自动刷新行情数据</div>
+                    </div>
+                    <div class="switch on" id="autoRefreshSwitch" onclick="toggleAutoRefresh()"></div>
+                </div>
+                <div class="settings-row">
+                    <div>
+                        <div class="sr-label">刷新间隔</div>
+                        <div class="sr-desc">数据刷新频率（秒）</div>
+                    </div>
+                    <select id="refreshIntervalSelect" style="height:36px;padding:0 10px;border-radius:8px;border:1.5px solid rgba(102,126,234,0.15);background:var(--bg-glass);font-size:13px;" onchange="updateRefreshInterval()">
+                        <option value="3">3秒</option>
+                        <option value="5" selected>5秒</option>
+                        <option value="10">10秒</option>
+                        <option value="30">30秒</option>
+                    </select>
+                </div>
+                <div class="settings-row">
+                    <div>
+                        <div class="sr-label">K线均线</div>
+                        <div class="sr-desc">显示的均线周期</div>
+                    </div>
+                    <input type="text" id="maPeriodsInput" value="5,10,20,60" style="width:120px;height:36px;padding:0 10px;border-radius:8px;border:1.5px solid rgba(102,126,234,0.15);background:var(--bg-glass);font-size:13px;" onchange="updateMASettings()">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 交易设置 -->
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title"><span>💰</span> 交易设置</div>
+        </div>
+        <div class="card-body">
+            <div class="settings-section">
+                <div class="settings-row">
+                    <div>
+                        <div class="sr-label">手续费率</div>
+                        <div class="sr-desc">模拟交易手续费比例</div>
+                    </div>
+                    <span class="tag tag-blue">0.03%</span>
+                </div>
+                <div class="settings-row">
+                    <div>
+                        <div class="sr-label">最低手续费</div>
+                        <div class="sr-desc">单笔最低收取</div>
+                    </div>
+                    <span class="tag tag-blue">¥5.00</span>
+                </div>
+                <div class="settings-row">
+                    <div>
+                        <div class="sr-label">初始资金</div>
+                        <div class="sr-desc">模拟账户初始余额</div>
+                    </div>
+                    <span class="tag tag-purple">¥1,000,000</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 关于 -->
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title"><span>ℹ️</span> 关于应用</div>
+        </div>
+        <div class="card-body">
+            <div class="settings-section">
+                <div class="settings-row">
+                    <div class="sr-label">应用名称</div>
+                    <span style="font-size:13px;color:var(--text-secondary);">多巴胺行情终端</span>
+                </div>
+                <div class="settings-row">
+                    <div class="sr-label">版本</div>
+                    <span style="font-size:13px;color:var(--text-secondary);">v1.0.0</span>
+                </div>
+                <div class="settings-row">
+                    <div class="sr-label">数据来源</div>
+                    <span style="font-size:13px;color:var(--text-secondary);">东方财富网</span>
+                </div>
+                <div class="settings-row">
+                    <div class="sr-label">技术栈</div>
+                    <span style="font-size:13px;color:var(--text-secondary);">Flask + SQLite + ECharts</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div style="margin-top:20px;text-align:center;">
+    <button class="btn btn-danger" onclick="resetAccount()">⚠️ 重置模拟账户</button>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+<script src="{{ url_for('static', filename='js/settings.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block title %}{{ stock_code }} - 个股行情{% endblock %}
+
+{% block content %}
+<!-- 股票头部信息 -->
+<div class="card" style="margin-bottom: 20px;">
+    <div class="card-body">
+        <div class="stock-header">
+            <div class="stock-info-left">
+                <div class="stock-title">
+                    <h2 id="stockName">{{ stock_code }}</h2>
+                    <span class="code-tag">{{ stock_code }}</span>
+                </div>
+                <div class="stock-price-big" id="stockPrice">--</div>
+                <div class="stock-change-info" id="stockChange">
+                    <span class="text-flat">--</span>
+                </div>
+            </div>
+            <div class="data-grid" style="flex:1;max-width:600px;" id="stockDataGrid">
+                <div class="data-item"><div class="label">今开</div><div class="value" id="dOpen">--</div></div>
+                <div class="data-item"><div class="label">最高</div><div class="value text-up" id="dHigh">--</div></div>
+                <div class="data-item"><div class="label">最低</div><div class="value text-down" id="dLow">--</div></div>
+                <div class="data-item"><div class="label">昨收</div><div class="value" id="dPrevClose">--</div></div>
+                <div class="data-item"><div class="label">成交量</div><div class="value" id="dVolume">--</div></div>
+                <div class="data-item"><div class="label">成交额</div><div class="value" id="dAmount">--</div></div>
+                <div class="data-item"><div class="label">总市值</div><div class="value" id="dMarketCap">--</div></div>
+                <div class="data-item"><div class="label">流通市值</div><div class="value" id="dFloatCap">--</div></div>
+                <div class="data-item"><div class="label">市盈率</div><div class="value" id="dPe">--</div></div>
+                <div class="data-item"><div class="label">市净率</div><div class="value" id="dPb">--</div></div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:10px;">
+                <button class="btn btn-success btn-lg" onclick="addToWatchlist('{{ stock_code }}')">⭐ 加入自选</button>
+                <button class="btn btn-primary btn-lg" onclick="location.href='/portfolio'">💼 去交易</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- K线图 -->
+<div class="chart-container" style="margin-bottom: 20px;">
+    <div class="chart-toolbar">
+        <button class="chart-tab" data-klt="5" onclick="switchKline(5)">15分</button>
+        <button class="chart-tab" data-klt="6" onclick="switchKline(6)">60分</button>
+        <button class="chart-tab active" data-klt="101" onclick="switchKline(101)">日K</button>
+        <button class="chart-tab" data-klt="102" onclick="switchKline(102)">周K</button>
+        <button class="chart-tab" data-klt="103" onclick="switchKline(103)">月K</button>
+        <div style="flex:1;"></div>
+        <label style="font-size:13px;color:var(--text-secondary);display:flex;align-items:center;gap:6px;">
+            <input type="checkbox" id="showMA" checked onchange="toggleMA()"> 均线
+        </label>
+        <label style="font-size:13px;color:var(--text-secondary);display:flex;align-items:center;gap:6px;">
+            <input type="checkbox" id="showVol" checked onchange="toggleVolume()"> 成交量
+        </label>
+    </div>
+    <div id="klineChart"></div>
+    <div id="volumeChart"></div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const STOCK_CODE = '{{ stock_code }}';
+</script>
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+<script src="{{ url_for('static', filename='js/stock_detail.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}自选股 - 多巴胺行情终端{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <div class="card-title"><span>⭐</span> 我的自选股</div>
+        <div style="display:flex;gap:8px;">
+            <input type="text" id="addStockCode" placeholder="输入股票代码" 
+                   style="height:36px;padding:0 12px;border:1.5px solid rgba(102,126,234,0.15);border-radius:10px;font-size:13px;outline:none;background:var(--bg-glass);">
+            <button class="btn btn-primary btn-sm" onclick="addStock()">+ 添加自选</button>
+            <button class="btn btn-outline btn-sm" onclick="loadWatchlist()">🔄 刷新</button>
+        </div>
+    </div>
+    <div class="stock-table-wrapper">
+        <table class="stock-table">
+            <thead>
+                <tr>
+                    <th>代码/名称</th>
+                    <th>现价</th>
+                    <th>涨跌幅</th>
+                    <th>涨跌额</th>
+                    <th>加入价</th>
+                    <th>期间涨幅</th>
+                    <th>备注</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody id="watchlistBody">
+                <tr><td colspan="8"><div class="loading"><div class="spinner"></div></div></td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+<script src="{{ url_for('static', filename='js/watchlist.js') }}"></script>
+{% endblock %}
