@@ -53,13 +53,17 @@ class Config:
     # 行情数据刷新间隔（秒）
     REFRESH_INTERVAL = 5
 
-    # 东方财富 API 基础地址
+    # 东方财富 API 基础地址（国内节点，境外可能被限）
     EASTMONEY_PUSH_URL = "http://push2.eastmoney.com/api/qt"
     EASTMONEY_PUSHHIS_URL = "http://push2his.eastmoney.com/api/qt"
     EASTMONEY_DATACENTER_URL = "http://datacenter-web.eastmoney.com/api/data/v1/get"
 
+    # 腾讯财经 API（CDN 全球分发，境外也可访问）
+    TENCENT_QUOTE_URL = "http://qt.gtimg.cn/q="
+    TENCENT_KLINE_URL = "http://web.ifzq.gtimg.cn/appstock/app/fqkline/get"
+
     # 请求超时时间（秒）
-    REQUEST_TIMEOUT = 10
+    REQUEST_TIMEOUT = 30  # 海外部署需要更长超时
 
     # 请求重试次数
     MAX_RETRIES = 3
@@ -75,3 +79,4 @@ class Config:
 
     # 调试模式（云端自动关闭）
     DEBUG = os.environ.get("FLASK_ENV", "development") != "production"
+
