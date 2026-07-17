@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}热点资讯 - 多巴胺行情终端{% endblock %}
+
+{% block content %}
+<!-- 资讯页面头部 -->
+<div class="news-page-header">
+    <div class="news-page-title">
+        <span class="news-page-icon">🔥</span>
+        <h1>热点资讯</h1>
+        <span class="market-status" id="marketStatus">加载中...</span>
+    </div>
+    <div class="news-page-meta">
+        <span class="news-page-subtitle">实时财经热点 · 滚动更新</span>
+        <span class="refresh-badge" id="newsRefreshBadge">加载中...</span>
+    </div>
+</div>
+
+<!-- 筛选标签 -->
+<div class="news-filter-bar">
+    <button class="news-filter-btn active" data-filter="all">全部</button>
+    <button class="news-filter-btn" data-filter="policy">政策要闻</button>
+    <button class="news-filter-btn" data-filter="market">市场动态</button>
+    <button class="news-filter-btn" data-filter="company">公司个股</button>
+    <button class="news-filter-btn" data-filter="global">环球财经</button>
+</div>
+
+<!-- 新闻列表 -->
+<div class="news-page-list" id="newsPageList">
+    <div class="loading"><div class="spinner"></div></div>
+</div>
+
+<!-- 加载更多 -->
+<div class="news-load-more" id="newsLoadMore" style="display:none;">
+    <button class="btn btn-outline" onclick="loadMoreNews()">
+        加载更多资讯
+    </button>
+</div>
+
+<!-- 底部提示 -->
+<div class="news-page-footer">
+    <p>数据来源：新浪财经 · 腾讯财经 | 内容仅供参考，不构成投资建议</p>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/news.js') }}"></script>
+{% endblock %}

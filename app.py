@@ -280,6 +280,13 @@ def dragon_tiger_page():
     return render_template("dragon_tiger.html", active_page="dragon-tiger")
 
 
+@app.route("/news")
+@login_required
+def news_page():
+    """热点资讯页面"""
+    return render_template("news.html", active_page="news")
+
+
 @app.route("/settings")
 @login_required
 def settings_page():

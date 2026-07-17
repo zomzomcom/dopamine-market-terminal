@@ -12,7 +12,6 @@ let lastUpdateTime = null;
 document.addEventListener('DOMContentLoaded', function() {
     loadIndices();
     loadStocks();
-    loadNews();
     startAutoRefresh();
 });
 
@@ -44,57 +43,6 @@ async function loadIndices() {
             </div>
         `;
     }).join('');
-}
-
-/**
- * 加载热点讯息
- */
-async function loadNews() {
-    const card = document.getElementById('newsCard');
-    const list = document.getElementById('newsList');
-    const badge = document.getElementById('newsRefreshBadge');
-    if (!card || !list) return;
-
-    card.style.display = 'block';
-
-    try {
-        const resp = await fetch('/api/news?count=12');
-        const json = await resp.json();
-
-        // 市场状态
-        const statusEl = document.getElementById('marketStatus');
-        if (statusEl && json.market_open !== undefined) {
-            statusEl.textContent = json.market_open ? '🟢 交易中' : '🔴 已收盘';
-            statusEl.className = 'market-status ' + (json.market_open ? 'open' : 'closed');
-        }
-
-        const news = json.data || [];
-        if (news.length === 0) {
-            list.innerHTML = '<div class="empty-state"><div class="text">暂无热点讯息</div></div>';
-        } else {
-            list.innerHTML = news.slice(0, 10).map(n => `
-                <a class="news-item" href="${n.url || '#'}" target="_blank" rel="noopener">
-                    <span class="news-time">${n.time || ''}</span>
-                    <span class="news-title">${n.title}</span>
-                    <span class="news-source">${n.source || ''}</span>
-                    ${n.intro ? `<span class="news-intro">${n.intro}</span>` : ''}
-                </a>
-            `).join('');
-        }
-
-        // 更新刷新时间
-        if (badge) {
-            const now = new Date();
-            const ts = String(now.getHours()).padStart(2,'0') + ':' +
-                       String(now.getMinutes()).padStart(2,'0') + ':' +
-                       String(now.getSeconds()).padStart(2,'0');
-            badge.textContent = '更新 ' + ts;
-            badge.style.opacity = '1';
-            setTimeout(() => { badge.style.opacity = '0.6'; }, 1500);
-        }
-    } catch (e) {
-        list.innerHTML = '<div class="empty-state"><div class="text">热点讯息加载失败</div></div>';
-    }
 }
 
 /**
@@ -191,7 +139,7 @@ async function quickAddWatch(code, name) {
 }
 
 /**
- * 启动自动刷新（大盘每 3 秒，列表每 30 秒，新闻每 30 秒）
+ * 启动自动刷新（大盘每 3 秒，列表每 30 秒）
  */
 function startAutoRefresh() {
     updateRefreshBadge();
@@ -203,7 +151,6 @@ function startAutoRefresh() {
         updateRefreshBadge();
         if (tick % 10 === 0) {  // 每30秒
             loadStocks(null, null, null);
-            loadNews();
         }
     }, 3000);
 }
