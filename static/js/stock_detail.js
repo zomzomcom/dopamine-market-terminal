@@ -10,12 +10,12 @@ let showMA = true;
 let showVolume = true;
 let stockRefreshTimer = null;
 
-// ECharts 多巴胺配色
+// ECharts 多巴胺配色 — 中国惯例：涨红跌绿
 const CHART_COLORS = {
-    up: '#e74c3c',        // 上涨红
-    upBorder: '#c0392b',  // 上涨边框
-    down: '#00b894',      // 下跌绿
-    downBorder: '#019875',// 下跌边框
+    up: '#ef5350',          // 上涨红（鲜明）
+    upBorder: '#c62828',    // 上涨边框
+    down: '#26a69a',        // 下跌绿
+    downBorder: '#00695c',  // 下跌边框
     ma5: '#f093fb',
     ma10: '#4facfe',
     ma20: '#fa709a',
@@ -28,8 +28,9 @@ const CHART_COLORS = {
 document.addEventListener('DOMContentLoaded', function() {
     loadStockDetail();
     loadKline();
-    // 定时刷新实时行情
-    stockRefreshTimer = setInterval(loadStockDetail, 5000);
+    // 定时刷新：行情 3s，K线 60s
+    stockRefreshTimer = setInterval(loadStockDetail, 3000);
+    setInterval(loadKline, 60000);
 });
 
 /**
@@ -148,7 +149,7 @@ function renderKlineChart(data) {
                 color0: CHART_COLORS.down,        // 阴线填充（下跌绿）
                 borderColor: CHART_COLORS.upBorder,
                 borderColor0: CHART_COLORS.downBorder,
-                borderWidth: 1.5,
+                borderWidth: 2,
             },
         },
     ];

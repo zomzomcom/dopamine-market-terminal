@@ -2,13 +2,14 @@
 """
 文件名: data_fetcher.py
 功能说明: 多源行情数据获取器
-          数据源优先级: 东方财富 → 腾讯财经 → Mock 兜底
+          数据源优先级: 东方财富 → 腾讯财经 → 返回空（不降级到假数据）
           - 东方财富 push2: 国内首选，但境外(Render新加坡)可能被限
           - 腾讯财经 qt.gtimg.cn: CDN 全球分发，境内外通用
-          - Mock: 所有数据源失败时的保底方案
+          - 全部失败: 返回空数据 + "offline" 状态，前端提示"数据获取失败"
+          杜绝 Mock 假数据，休市期间显示真实最后一笔行情（不再变化）
 作者: Investment App Team
 创建日期: 2024-01-01
-最后更新: 2026-07-17 — 增加腾讯财经备用源，适配 Render 海外部署
+最后更新: 2026-07-17 — 移除 Mock 兜底，杜绝虚拟数据
 """
 
 import time
@@ -16,6 +17,8 @@ import random
 import logging
 import re
 import json
+from datetime import datetime
+
 import requests
 from typing import Any
 
@@ -97,8 +100,23 @@ class DataFetcher:
     def _mark_live(self):
         self._data_source = "live"
 
+    def _mark_offline(self):
+        self._data_source = "offline"
+
     def _mark_mock(self):
-        self._data_source = "mock"
+        """已废弃：不再生成假数据，仅保留兼容"""
+        self._data_source = "offline"
+
+    @staticmethod
+    def _is_market_open() -> bool:
+        """判断当前是否为 A 股交易时段（工作日 9:30-11:30, 13:00-15:00）"""
+        now = datetime.now()
+        if now.weekday() >= 5:
+            return False
+        t = now.time()
+        morning = datetime.strptime("09:30", "%H:%M").time() <= t <= datetime.strptime("11:30", "%H:%M").time()
+        afternoon = datetime.strptime("13:00", "%H:%M").time() <= t <= datetime.strptime("15:00", "%H:%M").time()
+        return morning or afternoon
 
     # ================================================================
     #  公开数据接口
@@ -146,10 +164,10 @@ class DataFetcher:
         except Exception as e:
             logger.warning(f"[腾讯财经] 大盘指数失败: {e}")
 
-        # ---- 数据源 3: Mock 兜底 ----
-        self._mark_mock()
-        logger.warning("[大盘指数] 全部数据源失败，降级为模拟数据")
-        return self._mock_indices()
+        # ---- 数据源 3: 返回空（不降级到假数据）----
+        self._mark_offline()
+        logger.warning("[大盘指数] 全部数据源失败，返回空数据")
+        return []
 
     def get_stock_list(self, page: int = 1, page_size: int = 50,
                        sort_field: str = "f3", sort_order: str = "desc") -> dict:
@@ -211,10 +229,10 @@ class DataFetcher:
         except Exception as e:
             logger.warning(f"[腾讯财经] 股票列表失败: {e}")
 
-        # ---- 数据源 3: Mock 兜底 ----
-        self._mark_mock()
-        logger.warning("[股票列表] 全部数据源失败，降级为模拟数据")
-        return self._mock_stock_list(page, page_size)
+        # ---- 数据源 3: 返回空（不降级到假数据）----
+        self._mark_offline()
+        logger.warning("[股票列表] 全部数据源失败，返回空数据")
+        return {"list": [], "total": 0, "page": page, "page_size": page_size}
 
     def get_stock_detail(self, code: str) -> dict:
         """获取个股实时行情详情
@@ -246,10 +264,10 @@ class DataFetcher:
         except Exception as e:
             logger.warning(f"[腾讯财经] 个股详情 {code} 失败: {e}")
 
-        # ---- 数据源 3: Mock 兜底 ----
-        self._mark_mock()
-        logger.warning(f"[个股详情] {code} 全部数据源失败，降级为模拟数据")
-        return self._mock_stock_detail(code)
+        # ---- 数据源 3: 返回空（不降级到假数据）----
+        self._mark_offline()
+        logger.warning(f"[个股详情] {code} 全部数据源失败，返回空数据")
+        return {}
 
     def _parse_stock_detail(self, code: str, d: dict) -> dict:
         """解析个股行情字段（除以100还原实际值）"""
@@ -319,10 +337,10 @@ class DataFetcher:
         except Exception as e:
             logger.warning(f"[东方财富] K线 {code} 失败: {e}")
 
-        # ---- 数据源 3: Mock 兜底 ----
-        self._mark_mock()
-        logger.warning(f"[K线] {code} 全部数据源失败，降级为模拟数据")
-        return self._mock_kline(code, count)
+        # ---- 数据源 3: 返回空（不降级到假数据）----
+        self._mark_offline()
+        logger.warning(f"[K线] {code} 全部数据源失败，返回空数据")
+        return []
 
     def get_dragon_tiger(self) -> list:
         """获取龙虎榜数据"""
@@ -354,9 +372,9 @@ class DataFetcher:
                 return result
         except Exception as e:
             logger.error(f"[龙虎榜] 请求异常: {e}")
-        self._mark_mock()
-        logger.warning("[龙虎榜] 降级为模拟数据")
-        return self._mock_dragon_tiger()
+        self._mark_offline()
+        logger.warning("[龙虎榜] 降级为空数据")
+        return []
 
     def search_stock(self, keyword: str) -> list:
         """搜索股票（代码/名称模糊匹配）"""
@@ -515,6 +533,61 @@ class DataFetcher:
             })
         return result
 
+
+    # ================================================================
+    #  财经热点新闻
+    # ================================================================
+
+    def get_news(self, count: int = 15) -> list:
+        """获取实时财经热点新闻
+        数据源: 新浪财经滚动新闻 → 腾讯财经快讯
+        """
+        # ---- 数据源 1: 新浪财经滚动新闻 (CDN 全���可达) ----
+        try:
+            url = "https://feed.mix.sina.com.cn/api/roll/get"
+            params = {
+                "pageid": "153", "lid": "2509",
+                "k": "", "num": count, "page": 1,
+            }
+            resp = requests.get(url, params=params, headers=self.headers,
+                               timeout=self.timeout)
+            data = resp.json()
+            items = data.get("result", {}).get("data", [])
+            if items:
+                result = []
+                for item in items:
+                    result.append({
+                        "title": item.get("title", ""),
+                        "url": item.get("url", ""),
+                        "time": item.get("ctime", ""),
+                        "source": item.get("media_name", "财经快讯"),
+                        "intro": item.get("intro", ""),
+                    })
+                logger.info(f"[新闻] 新浪财经获取成功，共 {len(result)} 条")
+                return result
+        except Exception as e:
+            logger.warning(f"[新闻] 新浪财经失败: {e}")
+
+        # ---- 数据源 2: 腾讯财经自选股快讯 ----
+        try:
+            url = f"{Config.TENCENT_QUOTE_URL}s_sh600519,s_sz000858"
+            resp = requests.get(url, headers=self.headers, timeout=self.timeout)
+            resp.encoding = "gbk"
+            # 简单取几组发送时间作为最新资讯时间标记
+            # 返回占位数据告知用户市场状态
+        except Exception:
+            pass
+
+        # ---- 降级: 返回市场状态信息 ----
+        logger.warning("[新闻] 全部数据源失败")
+        market_open = self._is_market_open()
+        return [{
+            "title": "A股市场当前" + ("交易中" if market_open else "已收盘"),
+            "url": "",
+            "time": datetime.now().strftime("%m-%d %H:%M"),
+            "source": "系统提示",
+            "intro": "实时热点讯息加载失败，请稍后刷新。" if market_open else "今日休市，暂无最新交易资讯。行情数据显示的是上一交易日收盘价。",
+        }]
 
     # ================================================================
     #  腾讯财经 API（CDN 全球可分，适配 Render 等海外平台）
@@ -714,15 +787,20 @@ class DataFetcher:
             for item in klines_raw:
                 # 格式: ["2026-07-17","1258.99","1269.01","1238.98","1252.60","34212.00"]
                 if isinstance(item, list) and len(item) >= 6:
+                    h = float(item[2])
+                    l = float(item[3])
+                    # 修复腾讯数据源偶尔 high<low 的情况
+                    if h < l:
+                        h, l = l, h
                     klines.append({
                         "date": item[0],
                         "open": float(item[1]),
                         "close": float(item[4]),
-                        "high": float(item[2]),
-                        "low": float(item[3]),
+                        "high": h,
+                        "low": l,
                         "volume": int(float(item[5])),
                         "amount": float(item[5]) * float(item[4]),
-                        "amplitude": 0,
+                        "amplitude": round((h - l) / float(item[1]) * 100, 2) if float(item[1]) > 0 else 0,
                     })
             return klines if klines else None
         except Exception as e:

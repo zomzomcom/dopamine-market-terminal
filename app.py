@@ -297,6 +297,7 @@ def api_market_indices():
         resp = api_response(True, data, "获取大盘指数成功")
         resp_data = resp.get_json()
         resp_data["data_source"] = fetcher.data_source
+        resp_data["market_open"] = fetcher._is_market_open()
         return jsonify(resp_data)
     except Exception as e:
         return api_response(False, None, f"获取大盘指数失败: {e}", 500)
@@ -377,6 +378,20 @@ def api_dragon_tiger():
         return jsonify(resp_data)
     except Exception as e:
         return api_response(False, None, f"获取龙虎榜失败: {e}", 500)
+
+
+@app.route("/api/news", methods=["GET"])
+def api_news():
+    """获取实时财经热点新闻"""
+    try:
+        count = int(request.args.get("count", 15))
+        data = fetcher.get_news(count)
+        resp = api_response(True, data, "获取热点讯息成功")
+        resp_data = resp.get_json()
+        resp_data["market_open"] = fetcher._is_market_open()
+        return jsonify(resp_data)
+    except Exception as e:
+        return api_response(False, None, f"获取新闻失败: {e}", 500)
 
 
 # ==================== 自选股 API ====================
@@ -668,7 +683,8 @@ def api_status():
         return api_response(True, {
             "status": "running",
             "data_source": fetcher.data_source,
-            "version": "2.0",
+            "market_open": fetcher._is_market_open(),
+            "version": "2.1",
             "api_base": Config.EASTMONEY_PUSH_URL,
         }, "应用运行正常")
     except Exception as e:

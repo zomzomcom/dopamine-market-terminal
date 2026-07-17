@@ -2,6 +2,20 @@
 {% block title %}行情首页 - 多巴胺行情终端{% endblock %}
 
 {% block content %}
+<!-- 热点讯息 -->
+<div class="card news-card" id="newsCard" style="display:none;">
+    <div class="card-header">
+        <div class="card-title">
+            <span>🔥</span> 热点讯息
+            <span class="market-status" id="marketStatus"></span>
+            <span class="refresh-badge" id="newsRefreshBadge">加载中...</span>
+        </div>
+    </div>
+    <div class="news-list" id="newsList">
+        <div class="loading"><div class="spinner"></div></div>
+    </div>
+</div>
+
 <!-- 大盘指数 -->
 <div class="index-grid" id="indexGrid">
     <div class="loading"><div class="spinner"></div></div>

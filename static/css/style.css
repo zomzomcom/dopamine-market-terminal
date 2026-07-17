@@ -497,6 +497,69 @@ body::before {
     font-variant-numeric: tabular-nums;
 }
 
+/* ==================== 热点讯息 ==================== */
+.market-status {
+    font-size: 12px;
+    font-weight: 600;
+    margin-left: 12px;
+    padding: 2px 10px;
+    border-radius: 10px;
+}
+.market-status.open { background: rgba(0, 210, 211, 0.15); color: #00d2d3; }
+.market-status.closed { background: rgba(108, 117, 125, 0.15); color: #6c757d; }
+
+.news-list {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    max-height: 480px;
+    overflow-y: auto;
+}
+.news-item {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    border-radius: var(--radius-sm);
+    text-decoration: none;
+    color: var(--text-primary);
+    transition: var(--transition);
+    border-left: 3px solid transparent;
+}
+.news-item:hover {
+    background: rgba(102, 126, 234, 0.05);
+    border-left-color: #667eea;
+}
+.news-time {
+    font-size: 11px;
+    color: var(--text-muted);
+    white-space: nowrap;
+    min-width: 65px;
+}
+.news-title {
+    font-size: 13px;
+    font-weight: 500;
+    flex: 1;
+    line-height: 1.4;
+}
+.news-source {
+    font-size: 11px;
+    color: var(--text-muted);
+    background: var(--bg-glass);
+    padding: 2px 8px;
+    border-radius: 6px;
+    white-space: nowrap;
+}
+.news-intro {
+    width: 100%;
+    font-size: 11px;
+    color: var(--text-muted);
+    padding-left: 75px;
+    line-height: 1.3;
+}
+.news-card { margin-bottom: 20px; }
+
 /* 涨跌色 */
 .text-up { color: var(--color-up); }
 .text-down { color: var(--color-down); }
