@@ -478,17 +478,40 @@ class DataFetcher:
 
     def _mock_dragon_tiger(self) -> list:
         names = [
-            ("600519", "贵州茅台"), ("300750", "宁德时代"), ("002594", "比亚迪"),
-            ("601012", "隆基绿能"), ("300059", "东方财富"), ("000725", "京东方A"),
+            ("600519", "贵州茅台", "白酒/消费"),
+            ("300750", "宁德时代", "新能源/锂电池"),
+            ("002594", "比亚迪", "新能源汽车"),
+            ("601012", "隆基绿能", "光伏/新能源"),
+            ("300059", "东方财富", "互联网金融"),
+            ("000725", "京东方A", "OLED/面板"),
+        ]
+        # 常见知名游资/席位名称（用于 mock 展示）
+        seats = [
+            ["东方证券绍兴解放南路营业部", "宁波桑田路营业部", "财通证券杭州上塘路营业部", "华鑫证券上海分公司"],
+            ["机构专用", "深股通专用", "中信证券西安朱雀大街", "招商证券福州六一中路"],
+            ["华泰证券深圳益田路荣超商务中心", "光大证券宁波解放南路", "国泰君安上海分公司"],
+            ["中信证券北京总部", "海通证券杭州解放路", "银河证券绍兴营业部"],
+            ["申万宏源上海闵行区东川路", "国信证券深圳红岭中路", "中金公司上海分公司"],
+            ["东方财富证券拉萨东环路", "兴业证券陕西分公司", "华西证券北京紫竹院路"],
         ]
         result = []
-        for code, name in names:
+        for i, (code, name, sector) in enumerate(names):
+            net_buy = round(random.uniform(5000, 30000) * 10000, 2)
+            buy_amt = round(net_buy * random.uniform(2.5, 4.0), 2)
+            sell_amt = round(buy_amt * random.uniform(0.6, 1.0), 2)
+            top_buyers = seats[i % len(seats)][:3]
             result.append({
-                "code": code, "name": name, "date": "----",
+                "code": code, "name": name,
+                "date": "----",
                 "close": round(random.uniform(10, 500), 2),
                 "change_pct": round(random.uniform(-10, 10), 2),
-                "net_buy": 0, "buy_amount": 0, "sell_amount": 0,
+                "net_buy": net_buy,
+                "buy_amount": buy_amt,
+                "sell_amount": sell_amt,
                 "reason": "（模拟数据）",
+                "top_buyers": top_buyers,
+                "buy_seat_count": random.randint(3, 6),
+                "hot_sector": sector,
             })
         return result
 

@@ -1,9 +1,11 @@
 /**
  * 文件名: portfolio.js
- * 功能说明: 持仓交易页面逻辑 - 账户概览 + 模拟交易 + 持仓列表 + 交易记录
+ * 功能说明: 模拟交易页面逻辑
+ *          5个 Tab: 买入 / 卖出 / 撤单 / 持仓 / 交易记录
  */
 
 let portfolioTimer = null;
+let currentTab = 'buy';
 
 document.addEventListener('DOMContentLoaded', function() {
     loadAccount();
@@ -14,6 +16,22 @@ document.addEventListener('DOMContentLoaded', function() {
         loadPortfolio();
     }, 10000);
 });
+
+/**
+ * 切换模拟交易 Tab
+ */
+function switchTradeTab(tab) {
+    currentTab = tab;
+    // 更新 tab 按钮状态
+    document.querySelectorAll('.trade-tab').forEach(t => t.classList.remove('active'));
+    document.querySelector(`.trade-tab[data-tab="${tab}"]`).classList.add('active');
+    // 更新面板状态
+    document.querySelectorAll('.trade-pane').forEach(p => p.classList.remove('active'));
+    document.getElementById(`pane-${tab}`).classList.add('active');
+    // 切换到对应 tab 时刷新数据
+    if (tab === 'hold') loadPortfolio();
+    if (tab === 'record') loadTransactions();
+}
 
 /**
  * 加载账户概览

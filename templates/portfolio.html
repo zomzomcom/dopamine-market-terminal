@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}持仓交易 - 多巴胺行情终端{% endblock %}
+{% block title %}模拟交易 - 多巴胺行情终端{% endblock %}
 
 {% block content %}
 <!-- 账户概览 -->
@@ -7,113 +7,146 @@
     <div class="loading"><div class="spinner"></div></div>
 </div>
 
-<!-- 交易面板 -->
+<!-- 模拟交易：5个Tab -->
 <div class="card" style="margin-bottom: 20px;">
     <div class="card-header">
         <div class="card-title"><span>🎯</span> 模拟交易</div>
     </div>
-    <div class="card-body">
-        <div class="trade-panel">
-            <!-- 买入面板 -->
-            <div>
-                <h3 style="font-size:15px;font-weight:700;margin-bottom:14px;color:var(--color-up);">📈 买入</h3>
-                <div class="trade-form">
-                    <div class="form-group">
-                        <label>股票代码</label>
-                        <input type="text" id="buyCode" placeholder="如 600519">
-                    </div>
-                    <div class="form-group">
-                        <label>股票名称</label>
-                        <input type="text" id="buyName" placeholder="自动获取或手动输入">
-                    </div>
-                    <div class="form-group">
-                        <label>买入价格</label>
-                        <input type="number" id="buyPrice" placeholder="0.00" step="0.01">
-                    </div>
-                    <div class="form-group">
-                        <label>买入数量（股，需为100的倍数）</label>
-                        <input type="number" id="buyQty" placeholder="100" step="100" value="100">
-                    </div>
-                    <button class="btn btn-success btn-lg" onclick="doTrade('buy')">确认买入</button>
-                </div>
-            </div>
-            <!-- 卖出面板 -->
-            <div>
-                <h3 style="font-size:15px;font-weight:700;margin-bottom:14px;color:var(--color-down);">📉 卖出</h3>
-                <div class="trade-form">
-                    <div class="form-group">
-                        <label>股票代码</label>
-                        <input type="text" id="sellCode" placeholder="如 600519">
-                    </div>
-                    <div class="form-group">
-                        <label>股票名称</label>
-                        <input type="text" id="sellName" placeholder="自动获取或手动输入">
-                    </div>
-                    <div class="form-group">
-                        <label>卖出价格</label>
-                        <input type="number" id="sellPrice" placeholder="0.00" step="0.01">
-                    </div>
-                    <div class="form-group">
-                        <label>卖出数量（股）</label>
-                        <input type="number" id="sellQty" placeholder="100" step="100" value="100">
-                    </div>
-                    <button class="btn btn-danger btn-lg" onclick="doTrade('sell')">确认卖出</button>
-                </div>
-            </div>
+    <div class="trade-tabs">
+        <div class="trade-tab active" data-tab="buy" onclick="switchTradeTab('buy')">
+            <span class="trade-tab-icon">📈</span>
+            <span>买入</span>
+        </div>
+        <div class="trade-tab" data-tab="sell" onclick="switchTradeTab('sell')">
+            <span class="trade-tab-icon">📉</span>
+            <span>卖出</span>
+        </div>
+        <div class="trade-tab" data-tab="cancel" onclick="switchTradeTab('cancel')">
+            <span class="trade-tab-icon">🚫</span>
+            <span>撤单</span>
+        </div>
+        <div class="trade-tab" data-tab="hold" onclick="switchTradeTab('hold')">
+            <span class="trade-tab-icon">💼</span>
+            <span>持仓</span>
+        </div>
+        <div class="trade-tab" data-tab="record" onclick="switchTradeTab('record')">
+            <span class="trade-tab-icon">📋</span>
+            <span>交易记录</span>
         </div>
     </div>
-</div>
 
-<!-- 当前持仓 -->
-<div class="card" style="margin-bottom: 20px;">
-    <div class="card-header">
-        <div class="card-title"><span>💼</span> 当前持仓</div>
-        <button class="btn btn-outline btn-sm" onclick="loadPortfolio()">🔄 刷新</button>
-    </div>
-    <div class="stock-table-wrapper">
-        <table class="stock-table">
-            <thead>
-                <tr>
-                    <th>代码/名称</th>
-                    <th>持仓量</th>
-                    <th>成本价</th>
-                    <th>现价</th>
-                    <th>市值</th>
-                    <th>盈亏</th>
-                    <th>收益率</th>
-                    <th>今日涨跌</th>
-                </tr>
-            </thead>
-            <tbody id="portfolioBody">
-                <tr><td colspan="8"><div class="loading"><div class="spinner"></div></div></td></tr>
-            </tbody>
-        </table>
-    </div>
-</div>
+    <div class="card-body">
+        <!-- 买入面板 -->
+        <div class="trade-pane active" id="pane-buy">
+            <div class="trade-form-grid">
+                <div class="form-group">
+                    <label>股票代码</label>
+                    <input type="text" id="buyCode" placeholder="如 600519">
+                </div>
+                <div class="form-group">
+                    <label>股票名称</label>
+                    <input type="text" id="buyName" placeholder="自动获取或手动输入">
+                </div>
+                <div class="form-group">
+                    <label>买入价格</label>
+                    <input type="number" id="buyPrice" placeholder="0.00" step="0.01">
+                </div>
+                <div class="form-group">
+                    <label>买入数量（100的倍数）</label>
+                    <input type="number" id="buyQty" placeholder="100" step="100" value="100">
+                </div>
+            </div>
+            <div class="trade-action">
+                <button class="btn btn-success btn-lg" onclick="doTrade('buy')">📈 确认买入</button>
+            </div>
+        </div>
 
-<!-- 交易记录 -->
-<div class="card">
-    <div class="card-header">
-        <div class="card-title"><span>📋</span> 交易记录</div>
-        <button class="btn btn-outline btn-sm" onclick="loadTransactions()">🔄 刷新</button>
-    </div>
-    <div class="stock-table-wrapper">
-        <table class="stock-table">
-            <thead>
-                <tr>
-                    <th>时间</th>
-                    <th>代码/名称</th>
-                    <th>方向</th>
-                    <th>数量</th>
-                    <th>价格</th>
-                    <th>金额</th>
-                    <th>手续费</th>
-                </tr>
-            </thead>
-            <tbody id="transactionsBody">
-                <tr><td colspan="7"><div class="loading"><div class="spinner"></div></div></td></tr>
-            </tbody>
-        </table>
+        <!-- 卖出面板 -->
+        <div class="trade-pane" id="pane-sell">
+            <div class="trade-form-grid">
+                <div class="form-group">
+                    <label>股票代码</label>
+                    <input type="text" id="sellCode" placeholder="如 600519">
+                </div>
+                <div class="form-group">
+                    <label>股票名称</label>
+                    <input type="text" id="sellName" placeholder="自动获取或手动输入">
+                </div>
+                <div class="form-group">
+                    <label>卖出价格</label>
+                    <input type="number" id="sellPrice" placeholder="0.00" step="0.01">
+                </div>
+                <div class="form-group">
+                    <label>卖出数量（100的倍数）</label>
+                    <input type="number" id="sellQty" placeholder="100" step="100" value="100">
+                </div>
+            </div>
+            <div class="trade-action">
+                <button class="btn btn-danger btn-lg" onclick="doTrade('sell')">📉 确认卖出</button>
+            </div>
+        </div>
+
+        <!-- 撤单面板 -->
+        <div class="trade-pane" id="pane-cancel">
+            <div class="empty-state" style="padding:40px 0;">
+                <div class="emoji">✅</div>
+                <div class="text">模拟交易为即时成交，无待撤订单</div>
+                <div style="margin-top:8px;font-size:12px;color:var(--text-muted);">所有交易立即完成，无需撤单操作</div>
+            </div>
+        </div>
+
+        <!-- 持仓面板 -->
+        <div class="trade-pane" id="pane-hold">
+            <div class="pane-toolbar">
+                <span class="pane-title">💼 当前持仓</span>
+                <button class="btn btn-outline btn-sm" onclick="loadPortfolio()">🔄 刷新</button>
+            </div>
+            <div class="stock-table-wrapper">
+                <table class="stock-table">
+                    <thead>
+                        <tr>
+                            <th>代码/名称</th>
+                            <th>持仓量</th>
+                            <th>成本价</th>
+                            <th>现价</th>
+                            <th>市值</th>
+                            <th>盈亏</th>
+                            <th>收益率</th>
+                            <th>今日涨跌</th>
+                        </tr>
+                    </thead>
+                    <tbody id="portfolioBody">
+                        <tr><td colspan="8"><div class="loading"><div class="spinner"></div></div></td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 交易记录面板 -->
+        <div class="trade-pane" id="pane-record">
+            <div class="pane-toolbar">
+                <span class="pane-title">📋 交易记录</span>
+                <button class="btn btn-outline btn-sm" onclick="loadTransactions()">🔄 刷新</button>
+            </div>
+            <div class="stock-table-wrapper">
+                <table class="stock-table">
+                    <thead>
+                        <tr>
+                            <th>时间</th>
+                            <th>代码/名称</th>
+                            <th>方向</th>
+                            <th>数量</th>
+                            <th>价格</th>
+                            <th>金额</th>
+                            <th>手续费</th>
+                        </tr>
+                    </thead>
+                    <tbody id="transactionsBody">
+                        <tr><td colspan="7"><div class="loading"><div class="spinner"></div></div></td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 </div>
 {% endblock %}

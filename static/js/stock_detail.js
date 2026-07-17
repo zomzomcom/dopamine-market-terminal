@@ -12,8 +12,10 @@ let stockRefreshTimer = null;
 
 // ECharts 多巴胺配色
 const CHART_COLORS = {
-    up: '#e74c3c',
-    down: '#00b894',
+    up: '#e74c3c',        // 上涨红
+    upBorder: '#c0392b',  // 上涨边框
+    down: '#00b894',      // 下跌绿
+    downBorder: '#019875',// 下跌边框
     ma5: '#f093fb',
     ma10: '#4facfe',
     ma20: '#fa709a',
@@ -142,10 +144,11 @@ function renderKlineChart(data) {
             type: 'candlestick',
             data: ohlc,
             itemStyle: {
-                color: CHART_COLORS.up,        // 阳线颜色（上涨红）
-                color0: CHART_COLORS.down,     // 阴线颜色（下跌绿）
-                borderColor: CHART_COLORS.up,
-                borderColor0: CHART_COLORS.down,
+                color: CHART_COLORS.up,           // 阳线填充（上涨红）
+                color0: CHART_COLORS.down,        // 阴线填充（下跌绿）
+                borderColor: CHART_COLORS.upBorder,
+                borderColor0: CHART_COLORS.downBorder,
+                borderWidth: 1.5,
             },
         },
     ];
