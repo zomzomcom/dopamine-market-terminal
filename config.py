@@ -16,18 +16,32 @@ class Config:
     """应用全局配置类"""
 
     # Flask 基础配置
-    SECRET_KEY = "dopamine-investment-app-2024-secure-key"
+    SECRET_KEY = os.environ.get("SECRET_KEY", "dopamine-investment-app-2024-secure-key")
 
-    # SQLite 数据库路径（开箱即用，无需安装 MySQL）
+    # Session 配置（用户登录态）
+    SESSION_COOKIE_NAME = "dopamine_session"
+    SESSION_COOKIE_HTTPONLY = True
+    SESSION_COOKIE_SAMESITE = "Lax"
+    PERMANENT_SESSION_LIFETIME = 86400 * 7  # 7 天免登录
+
+    # ==================== 数据库配置 ====================
+
+    # 是否为云端部署（Render/Heroku 等平台）
+    IS_CLOUD = "RENDER" in os.environ or "DYNO" in os.environ
+
+    # 数据库类型: "sqlite"（本地 EXE 开箱即用）或 "mysql"（HeidiSQL 管理 / 云端）
+    DB_TYPE = os.environ.get("DB_TYPE", "mysql" if IS_CLOUD else "sqlite")
+
+    # SQLite 数据库路径（DB_TYPE = sqlite 时使用）
     DB_PATH = os.path.join(BASE_DIR, "database", "investment.db")
     DB_URI = f"sqlite:///{DB_PATH}"
 
-    # MySQL 配置（如需使用 Navicat 管理，取消注释并在 app.py 中切换）
-    MYSQL_HOST = "127.0.0.1"
-    MYSQL_PORT = 3306
-    MYSQL_USER = "root"
-    MYSQL_PASSWORD = "your_password"
-    MYSQL_DATABASE = "investment_app"
+    # MySQL 配置（DB_TYPE = mysql 时使用，HeidiSQL 也连接这里）
+    MYSQL_HOST = os.environ.get("MYSQL_HOST", "127.0.0.1")
+    MYSQL_PORT = int(os.environ.get("MYSQL_PORT", 3306))
+    MYSQL_USER = os.environ.get("MYSQL_USER", "root")
+    MYSQL_PASSWORD = os.environ.get("MYSQL_PASSWORD", "root")
+    MYSQL_DATABASE = os.environ.get("MYSQL_DATABASE", "investment_app")
     MYSQL_URI = (
         f"mysql+pymysql://{MYSQL_USER}:{MYSQL_PASSWORD}@"
         f"{MYSQL_HOST}:{MYSQL_PORT}/{MYSQL_DATABASE}?charset=utf8mb4"
@@ -61,6 +75,3 @@ class Config:
 
     # 调试模式（云端自动关闭）
     DEBUG = os.environ.get("FLASK_ENV", "development") != "production"
-
-    # 是否为云端部署（Render/Heroku 等平台）
-    IS_CLOUD = "RENDER" in os.environ or "DYNO" in os.environ

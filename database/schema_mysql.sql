@@ -1,10 +1,16 @@
 -- ================================================================
 -- 文件名: schema_mysql.sql
--- 功能说明: 投资分析应用 MySQL 完整建表脚本
+-- 功能说明: 多巴胺行情终端 MySQL 完整建表脚本
+--          含用户系统、自选股、持仓、交易、配置等全部表结构
 --          含索引、字段注释、初始化测试数据
--- 使用方式: 在 Navicat 中连接 MySQL 后执行此脚本
--- 数据库:   investment_app
--- 字符集:   utf8mb4 (支持 Emoji 等四字节字符)
+-- 使用方式: 在 HeidiSQL / Navicat 中连接 MySQL 后执行此脚本
+-- HeidiSQL 连接信息:
+--   主机: 127.0.0.1
+--   端口: 3306
+--   用户: root
+--   密码: 你的MySQL密码
+--   数据库: investment_app
+-- 字符集:   utf8mb4 (支持中文和 Emoji 等四字节字符)
 -- ================================================================
 
 -- 创建数据库
@@ -13,6 +19,23 @@ CREATE DATABASE IF NOT EXISTS `investment_app`
     DEFAULT COLLATE utf8mb4_unicode_ci;
 
 USE `investment_app`;
+
+-- ==================== 用户表 ====================
+DROP TABLE IF EXISTS `users`;
+CREATE TABLE `users` (
+    `id`              INT AUTO_INCREMENT PRIMARY KEY COMMENT '用户ID',
+    `username`        VARCHAR(50)  NOT NULL UNIQUE COMMENT '用户名（登录用）',
+    `password_hash`   VARCHAR(255) NOT NULL COMMENT '密码哈希值（werkzeug sha256）',
+    `email`           VARCHAR(100) DEFAULT '' COMMENT '邮箱',
+    `role`            VARCHAR(20)  DEFAULT 'user' COMMENT '角色(admin/user)',
+    `is_active`       TINYINT(1)   DEFAULT 1 COMMENT '账号是否启用(0禁用/1启用)',
+    `last_login`      DATETIME     DEFAULT NULL COMMENT '最后登录时间',
+    `last_ip`         VARCHAR(45)  DEFAULT '' COMMENT '最后登录IP',
+    `created_at`      DATETIME     DEFAULT CURRENT_TIMESTAMP COMMENT '注册时间',
+    `updated_at`      DATETIME     DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    INDEX `idx_username` (`username`),
+    INDEX `idx_email` (`email`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='用户表';
 
 -- ==================== 股票基础信息表 ====================
 DROP TABLE IF EXISTS `stock_basic`;
@@ -172,6 +195,9 @@ CREATE TABLE `dragon_tiger` (
 
 -- 初始化账户
 INSERT INTO `account` (`balance`, `frozen`, `initial_balance`) VALUES (1000000.00, 0, 1000000.00);
+
+-- 初始化管理员账号: 运行 init_mysql.py 自动创建（含正确密码哈希）
+-- 默认账号: admin / 密码: admin123
 
 -- 初始化配置
 INSERT INTO `settings` (`key`, `value`) VALUES

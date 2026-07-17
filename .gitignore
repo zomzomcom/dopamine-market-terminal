@@ -24,16 +24,8 @@ database/*.db
 .DS_Store
 Thumbs.db
 
-# 临时脚本
-*.vbs
-start.bat
-create_shortcut.py
-test_e2e.py
-test_final.py
-migrate_project.py
-cleanup_cdrive.py
-rewrite_vbs.py
-finish_cleanup.py
+# 运行日志
+logs/
 
-# 图标文件
-app_icon.ico
+# 部署配置（render.yaml 需保留在 git 中，其他平台配置忽略）
+# render.yaml 用于 Render.com 自动部署

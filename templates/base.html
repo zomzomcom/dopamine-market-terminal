@@ -66,6 +66,14 @@
                 <span class="status-dot"></span>
                 <span class="status-text">检测中...</span>
             </div>
+
+            <!-- 用户状态 -->
+            <div class="nav-user" id="navUser">
+                <a href="/login" class="nav-item">
+                    <span class="nav-icon">👤</span>登录
+                </a>
+            </div>
+
             <!-- 时间显示 -->
             <div class="nav-time" id="navTime"></div>
         </div>
@@ -78,6 +86,9 @@
 
     <!-- 全局通知 -->
     <div id="toastContainer" class="toast-container"></div>
+
+    <!-- 全局 JS -->
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
 
     <!-- App JS (页面级脚本在 extra_js 中加载) -->
     {% block extra_js %}{% endblock %}

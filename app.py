@@ -49,7 +49,7 @@ from data_fetcher import fetcher
 
 # ==================== Flask 应用初始化 ====================
 
-from flask import Flask, render_template, request, jsonify, g
+from flask import Flask, render_template, request, jsonify, g, session, redirect, url_for
 
 app = Flask(
     __name__,
@@ -57,6 +57,9 @@ app = Flask(
     static_folder=os.path.join(RESOURCE_DIR, "static"),
 )
 app.config.from_object(Config)
+
+# 密码哈希
+from werkzeug.security import generate_password_hash, check_password_hash
 
 
 # ==================== 工具函数 ====================
@@ -97,39 +100,188 @@ def require_token(f):
     return decorated
 
 
+def login_required(f):
+    """
+    登录验证装饰器
+    API 请求返回 JSON 错误，页面请求重定向到登录页
+    """
+    @functools.wraps(f)
+    def decorated(*args, **kwargs):
+        if "user_id" not in session:
+            if request.path.startswith("/api/"):
+                return api_response(False, None, "请先登录", 401)
+            return redirect(url_for("login_page"))
+        g.user_id = session["user_id"]
+        g.username = session.get("username", "")
+        return f(*args, **kwargs)
+    return decorated
+
+
+# ==================== 认证 API ====================
+
+@app.route("/api/auth/register", methods=["POST"])
+def api_register():
+    """用户注册"""
+    try:
+        data = request.get_json()
+        username = (data.get("username") or "").strip()
+        password = (data.get("password") or "").strip()
+        email = (data.get("email") or "").strip()
+
+        # 校验
+        if not username or len(username) < 2:
+            return api_response(False, None, "用户名至少 2 个字符", 400)
+        if not password or len(password) < 6:
+            return api_response(False, None, "密码至少 6 个字符", 400)
+        if len(username) > 50:
+            return api_response(False, None, "用户名不能超过 50 个字符", 400)
+
+        # 检查用户名是否已存在
+        existing = db.execute_query(
+            "SELECT id FROM users WHERE username = ?", (username,)
+        )
+        if existing:
+            return api_response(False, None, "用户名已被注册", 400)
+
+        # 创建用户
+        password_hash = generate_password_hash(password)
+        user_id = db.execute_insert(
+            "INSERT INTO users (username, password_hash, email, role) VALUES (?, ?, ?, ?)",
+            (username, password_hash, email, "user"),
+        )
+
+        if user_id > 0:
+            # 为新用户创建账户
+            db.execute_insert(
+                "INSERT INTO account (user_id, balance, initial_balance) VALUES (?, ?, ?)",
+                (user_id, Config.INITIAL_BALANCE, Config.INITIAL_BALANCE),
+            )
+            return api_response(True, {"user_id": user_id, "username": username}, "注册成功")
+        return api_response(False, None, "注册失败", 500)
+    except Exception as e:
+        return api_response(False, None, f"注册失败: {e}", 500)
+
+
+@app.route("/api/auth/login", methods=["POST"])
+def api_login():
+    """用户登录（Session 模式）"""
+    try:
+        data = request.get_json()
+        username = (data.get("username") or "").strip()
+        password = (data.get("password") or "").strip()
+
+        if not username or not password:
+            return api_response(False, None, "用户名和密码不能为空", 400)
+
+        # 查找用户
+        users = db.execute_query(
+            "SELECT * FROM users WHERE username = ? AND is_active = 1", (username,)
+        )
+        if not users:
+            return api_response(False, None, "用户名或密码错误", 401)
+
+        user = users[0]
+
+        # 验证密码
+        if not check_password_hash(user["password_hash"], password):
+            return api_response(False, None, "用户名或密码错误", 401)
+
+        # 写入 Session
+        session["user_id"] = user["id"]
+        session["username"] = user["username"]
+        session["role"] = user.get("role", "user")
+        session.permanent = True
+
+        # 更新最后登录时间
+        db.execute_update(
+            "UPDATE users SET last_login = datetime('now','localtime'), last_ip = ? WHERE id = ?",
+            (request.remote_addr or "", user["id"]),
+        )
+
+        return api_response(True, {
+            "user_id": user["id"],
+            "username": user["username"],
+            "role": user.get("role", "user"),
+        }, "登录成功")
+    except Exception as e:
+        return api_response(False, None, f"登录失败: {e}", 500)
+
+
+@app.route("/api/auth/logout", methods=["GET", "POST"])
+def api_logout():
+    """退出登录"""
+    session.clear()
+    return api_response(True, None, "已退出登录")
+
+
+@app.route("/api/auth/status", methods=["GET"])
+def api_auth_status():
+    """获取当前登录状态"""
+    if "user_id" in session:
+        return api_response(True, {
+            "logged_in": True,
+            "user_id": session["user_id"],
+            "username": session.get("username", ""),
+            "role": session.get("role", "user"),
+        }, "已登录")
+    return api_response(True, {"logged_in": False}, "未登录")
+
+
 # ==================== 页面路由 ====================
 
 @app.route("/")
+@login_required
 def index():
     """行情首页"""
     return render_template("index.html", active_page="index")
 
 
+@app.route("/login")
+def login_page():
+    """登录页面"""
+    if "user_id" in session:
+        return redirect(url_for("index"))
+    return render_template("login.html", active_page="login")
+
+
+@app.route("/register")
+def register_page():
+    """注册页面"""
+    if "user_id" in session:
+        return redirect(url_for("index"))
+    return render_template("register.html", active_page="register")
+
+
 @app.route("/stock/<code>")
+@login_required
 def stock_detail(code):
     """个股 K 线详情页"""
     return render_template("stock.html", active_page="stock", stock_code=code)
 
 
 @app.route("/watchlist")
+@login_required
 def watchlist_page():
     """自选股页面"""
     return render_template("watchlist.html", active_page="watchlist")
 
 
 @app.route("/portfolio")
+@login_required
 def portfolio_page():
     """持仓交易页面"""
     return render_template("portfolio.html", active_page="portfolio")
 
 
 @app.route("/dragon-tiger")
+@login_required
 def dragon_tiger_page():
     """龙虎榜页面"""
     return render_template("dragon_tiger.html", active_page="dragon-tiger")
 
 
 @app.route("/settings")
+@login_required
 def settings_page():
     """设置页面"""
     return render_template("settings.html", active_page="settings")

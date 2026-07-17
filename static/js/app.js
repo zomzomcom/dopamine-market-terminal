@@ -232,11 +232,12 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // 启动时钟 + 数据源检测
+    // 启动时钟 + 数据源检测 + 用户状态
     updateClock();
     setInterval(updateClock, 1000);
     updateDataSourceStatus();
     setInterval(updateDataSourceStatus, 5000);
+    updateUserStatus();
 });
 
 /**
@@ -308,4 +309,58 @@ async function addToWatchlist(code) {
     if (result !== null) {
         // 成功消息已在 apiPost 中显示
     }
+}
+
+/**
+ * 更新用户登录状态（导航栏用户菜单）
+ */
+async function updateUserStatus() {
+    const el = document.getElementById('navUser');
+    if (!el) return;
+
+    try {
+        const resp = await fetch('/api/auth/status');
+        const json = await resp.json();
+        const user = json.data;
+
+        if (user && user.logged_in) {
+            el.innerHTML = `
+                <div class="user-menu">
+                    <span class="user-avatar">👤</span>
+                    <span class="user-name">${escapeHtml(user.username)}</span>
+                    <div class="user-dropdown">
+                        <a href="/settings">⚙️ 设置</a>
+                        <a href="#" onclick="doLogout(); return false;">🚪 退出登录</a>
+                    </div>
+                </div>
+            `;
+        } else {
+            el.innerHTML = `
+                <a href="/login" class="nav-item">
+                    <span class="nav-icon">👤</span>登录
+                </a>
+            `;
+        }
+    } catch (e) {
+        // 静默失败
+    }
+}
+
+/**
+ * 退出登录
+ */
+async function doLogout() {
+    try {
+        await fetch('/api/auth/logout', { method: 'POST' });
+    } catch (e) { /* ignore */ }
+    window.location.href = '/login';
+}
+
+/**
+ * HTML 转义（防 XSS）
+ */
+function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
 }

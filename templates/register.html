@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>注册 - 多巴胺行情终端</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Noto+Sans+SC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        .auth-page {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .auth-card {
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-lg);
+            width: 100%;
+            max-width: 420px;
+            padding: 48px 40px;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        .auth-logo {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+        .auth-logo .logo-icon {
+            width: 56px;
+            height: 56px;
+            margin: 0 auto 16px;
+        }
+        .auth-logo h1 {
+            font-size: 24px;
+            font-weight: 700;
+            background: var(--grad-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .auth-logo p {
+            color: var(--text-secondary);
+            font-size: 14px;
+            margin-top: 6px;
+        }
+        .auth-form .form-group {
+            margin-bottom: 20px;
+        }
+        .auth-form label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
+        }
+        .auth-form input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid rgba(0,0,0,0.08);
+            border-radius: var(--radius-sm);
+            font-size: 15px;
+            font-family: inherit;
+            color: var(--text-primary);
+            background: rgba(0,0,0,0.02);
+            transition: var(--transition);
+            outline: none;
+        }
+        .auth-form input:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102,126,234,0.15);
+            background: #fff;
+        }
+        .form-hint {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 4px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .form-hint.ok { color: #00b894; }
+        .auth-form .btn-primary {
+            width: 100%;
+            padding: 13px;
+            font-size: 16px;
+            font-weight: 600;
+            border: none;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            background: var(--grad-primary);
+            color: #fff;
+            transition: var(--transition);
+            margin-top: 8px;
+        }
+        .auth-form .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-glow);
+        }
+        .auth-form .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .auth-error {
+            background: rgba(231,76,60,0.1);
+            color: #e74c3c;
+            padding: 10px 14px;
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            margin-bottom: 16px;
+            display: none;
+        }
+        .auth-error.show { display: block; }
+        .auth-success {
+            background: rgba(0,184,148,0.1);
+            color: #00b894;
+            padding: 10px 14px;
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            margin-bottom: 16px;
+            display: none;
+        }
+        .auth-success.show { display: block; }
+        .auth-footer {
+            text-align: center;
+            margin-top: 24px;
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+        .auth-footer a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .auth-footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-page">
+        <div class="auth-card">
+            <div class="auth-logo">
+                <div class="logo-icon">
+                    <svg viewBox="0 0 40 40" fill="none" width="56" height="56">
+                        <rect x="2" y="2" width="36" height="36" rx="10" fill="url(#logoGrad)"/>
+                        <path d="M10 28L16 18L22 24L30 12" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                        <circle cx="30" cy="12" r="3" fill="white"/>
+                        <defs>
+                            <linearGradient id="logoGrad" x1="0" y1="0" x2="40" y2="40">
+                                <stop offset="0%" stop-color="#FF6B6B"/>
+                                <stop offset="50%" stop-color="#A855F7"/>
+                                <stop offset="100%" stop-color="#3B82F6"/>
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                </div>
+                <h1>创建账号</h1>
+                <p>加入多巴胺行情终端</p>
+            </div>
+
+            <div class="auth-error" id="authError"></div>
+            <div class="auth-success" id="authSuccess"></div>
+
+            <form class="auth-form" id="registerForm">
+                <div class="form-group">
+                    <label for="username">用户名 *</label>
+                    <input type="text" id="username" placeholder="2-50 个字符" autocomplete="username" required>
+                    <div class="form-hint" id="usernameHint">2-50 个字符，支持中英文和数字</div>
+                </div>
+                <div class="form-group">
+                    <label for="email">邮箱（选填）</label>
+                    <input type="email" id="email" placeholder="用于找回密码" autocomplete="email">
+                </div>
+                <div class="form-group">
+                    <label for="password">密码 *</label>
+                    <input type="password" id="password" placeholder="至少 6 个字符" autocomplete="new-password" required>
+                    <div class="form-hint" id="passwordHint">至少 6 个字符</div>
+                </div>
+                <div class="form-group">
+                    <label for="confirmPassword">确认密码 *</label>
+                    <input type="password" id="confirmPassword" placeholder="再次输入密码" autocomplete="new-password" required>
+                    <div class="form-hint" id="confirmHint"></div>
+                </div>
+                <button type="submit" class="btn-primary" id="registerBtn">注 册</button>
+            </form>
+
+            <div class="auth-footer">
+                已有账号？<a href="/login">立即登录</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    const API_BASE = '';
+
+    async function apiCall(path, method = 'GET', data = null) {
+        const options = { method, headers: { 'Content-Type': 'application/json' } };
+        if (data) options.body = JSON.stringify(data);
+        const res = await fetch(API_BASE + path, options);
+        return res.json();
+    }
+
+    function showError(msg) {
+        const el = document.getElementById('authError');
+        el.textContent = msg;
+        el.classList.add('show');
+        document.getElementById('authSuccess').classList.remove('show');
+        setTimeout(() => el.classList.remove('show'), 4000);
+    }
+
+    function showSuccess(msg) {
+        const el = document.getElementById('authSuccess');
+        el.textContent = msg;
+        el.classList.add('show');
+        document.getElementById('authError').classList.remove('show');
+    }
+
+    // 实时校验
+    const pwd = document.getElementById('password');
+    const confirmPwd = document.getElementById('confirmPassword');
+    const confirmHint = document.getElementById('confirmHint');
+    const pwdHint = document.getElementById('passwordHint');
+
+    pwd.addEventListener('input', () => {
+        if (pwd.value.length >= 6) {
+            pwdHint.textContent = '\u2713 密码强度合格';
+            pwdHint.className = 'form-hint ok';
+        } else {
+            pwdHint.textContent = '至少 6 个字符';
+            pwdHint.className = 'form-hint';
+        }
+        checkMatch();
+    });
+
+    confirmPwd.addEventListener('input', checkMatch);
+
+    function checkMatch() {
+        if (!confirmPwd.value) {
+            confirmHint.textContent = '';
+            confirmHint.className = 'form-hint';
+        } else if (pwd.value === confirmPwd.value) {
+            confirmHint.textContent = '\u2713 密码一致';
+            confirmHint.className = 'form-hint ok';
+        } else {
+            confirmHint.textContent = '\u2717 两次密码不一致';
+            confirmHint.className = 'form-hint';
+            confirmHint.style.color = '#e74c3c';
+        }
+    }
+
+    document.getElementById('registerForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn = document.getElementById('registerBtn');
+        const username = document.getElementById('username').value.trim();
+        const email = document.getElementById('email').value.trim();
+        const password = pwd.value;
+        const confirmPassword = confirmPwd.value;
+
+        if (!username || !password) {
+            showError('用户名和密码为必填项');
+            return;
+        }
+        if (username.length < 2) {
+            showError('用户名至少 2 个字符');
+            return;
+        }
+        if (password.length < 6) {
+            showError('密码至少 6 个字符');
+            return;
+        }
+        if (password !== confirmPassword) {
+            showError('两次密码不一致');
+            return;
+        }
+
+        btn.disabled = true;
+        btn.textContent = '注册中...';
+
+        try {
+            const res = await apiCall('/api/auth/register', 'POST', { username, password, email });
+            if (res.success) {
+                showSuccess('注册成功！3 秒后跳转到登录页...');
+                setTimeout(() => { window.location.href = '/login'; }, 3000);
+            } else {
+                showError(res.message || '注册失败');
+            }
+        } catch (err) {
+            showError('网络错误，请检查连接');
+        }
+
+        btn.disabled = false;
+        btn.textContent = '注 册';
+    });
+    </script>
+</body>
+</html>
